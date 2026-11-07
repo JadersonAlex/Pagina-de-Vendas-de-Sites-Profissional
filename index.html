@@ -67,6 +67,11 @@ h2{font-size:clamp(32px,4.4vw,52px);font-weight:700;line-height:1.05;letter-spac
 .stage{flex:1;overflow:auto;padding:20px;display:flex;justify-content:center}
 .frame{width:100%;max-width:1000px;height:max-content;border-radius:8px;overflow:hidden;background:var(--s-bg);color:var(--s-tx);transition:max-width .25s;font-family:var(--s-f)}
 .frame.mob{max-width:375px}
+.frame.live{height:auto;align-self:stretch;display:flex;flex-direction:column;background:#fff}
+.frame.live iframe{flex:1;width:100%;border:0;background:#fff;min-height:0}
+.frame.live .chrome{flex:none}
+.bar a{background:#1c1c1c;color:var(--tx);border:1px solid var(--line);border-radius:4px;padding:8px 14px;font:600 13px Montserrat,sans-serif;text-decoration:none}
+.bar a[hidden]{display:none}
 .chrome{background:#222;padding:8px 12px;display:flex;gap:6px;align-items:center}
 .chrome i{width:9px;height:9px;border-radius:50%;background:#555}
 .chrome span{margin-left:10px;background:#111;color:#999;font-size:11px;padding:3px 12px;border-radius:10px}
@@ -229,7 +234,7 @@ footer{padding:36px 0 120px;color:var(--mut);font-size:14px}
 <footer><div class="wrap">Todos os direitos reservados. Jaderson &amp; Diego</div></footer>
 <a class="fab wl" href="#" target="_blank" rel="noopener" aria-label="Conversar no WhatsApp">WhatsApp</a>
 <div id="md" role="dialog" aria-modal="true" aria-label="Visualização do modelo">
-  <div class="bar"><strong id="mt"></strong><div><button id="bd" aria-pressed="true">Computador</button><button id="bm" aria-pressed="false">Celular</button><button id="bx">Fechar</button></div></div>
+  <div class="bar"><strong id="mt"></strong><div><button id="bd" aria-pressed="true">Computador</button><button id="bm" aria-pressed="false">Celular</button><a id="bo" target="_blank" rel="noopener" hidden>Nova aba</a><button id="bx">Fechar</button></div></div>
   <div class="stage"><div class="frame" id="fr"></div></div>
 </div>
 <script>
@@ -255,13 +260,28 @@ var PG=['1 página', '1 página', '1 página', 'Várias páginas', 'Várias pág
 var g=document.getElementById('grid');
 T.forEach(function(m,k){
   var b=document.createElement('button');b.className='tp glass';
-  b.innerHTML='<div class="th" style="background:linear-gradient(135deg,'+m.a+','+m.b+')"><span class="mk"><i></i><i></i><i></i></span><span class="mh"></span><span class="mh s"></span><span class="mc" style="background:'+m.c+'"></span><span class="mg"><u></u><u></u><u></u></span></div><div class="tl"><small class="lb">Modelo '+(k+1)+' &middot; '+m.p+'</small><strong>'+m.n+'</strong></div><div class="hv"><span class="lb">Ideal para</span><p>'+IDEAL[k]+'</p><span class="lb">Formato</span><p>'+PG[k]+' &middot; WhatsApp &middot; painel</p><em>'+(m.u?'Abrir site de exemplo':'Abrir visualização')+'</em></div>';
+  b.innerHTML='<div class="th" style="background:linear-gradient(135deg,'+m.a+','+m.b+')"><span class="mk"><i></i><i></i><i></i></span><span class="mh"></span><span class="mh s"></span><span class="mc" style="background:'+m.c+'"></span><span class="mg"><u></u><u></u><u></u></span></div><div class="tl"><small class="lb">Modelo '+(k+1)+' &middot; '+m.p+'</small><strong>'+m.n+'</strong></div><div class="hv"><span class="lb">Ideal para</span><p>'+IDEAL[k]+'</p><span class="lb">Formato</span><p>'+PG[k]+' &middot; WhatsApp &middot; painel</p><em>'+(m.u?'Ver site de exemplo':'Abrir visualização')+'</em></div>';
   if(m.img){var th=b.querySelector('.th');th.innerHTML='';th.style.background='#120d06 url('+m.img+') '+(m.pos||'40%')+' center/cover no-repeat'}
   b.onclick=function(){open_(k)};g.appendChild(b);
 });
 var md=document.getElementById('md'),fr=document.getElementById('fr'),last;
 function open_(k){
-  var m=T[k];if(m.u){window.open(m.u,'_blank','noopener');return}last=document.activeElement;
+  var m=T[k];last=document.activeElement;
+  var bo=document.getElementById('bo');
+  if(m.u){
+    fr.removeAttribute('style');
+    fr.className='frame live'+(fr.classList.contains('mob')?' mob':'');
+    fr.innerHTML='<div class="chrome"><i></i><i></i><i></i><span></span></div>';
+    fr.querySelector('.chrome span').textContent=m.u.replace(/^https?:\/\//,'');
+    var f=document.createElement('iframe');f.src=m.u;f.title=m.n;f.loading='eager';
+    f.setAttribute('allow','fullscreen');
+    fr.appendChild(f);
+    bo.href=m.u;bo.hidden=false;
+    document.getElementById('mt').textContent='Modelo '+(k+1)+': '+m.n;
+    md.classList.add('on');document.body.style.overflow='hidden';document.getElementById('bx').focus();
+    return;
+  }
+  bo.hidden=true;fr.classList.remove('live');
   var s=fr.style;
   s.setProperty('--s-bg',m.bg);s.setProperty('--s-tx',m.tx);s.setProperty('--s-a',m.a);s.setProperty('--s-b',m.b);s.setProperty('--s-cd',m.cd);s.setProperty('--s-c',m.c);s.setProperty('--s-ct',m.ct);s.setProperty('--s-r',m.r);s.setProperty('--s-f',m.f+',sans-serif');s.setProperty('--s-h',m.h+',serif');
   fr.innerHTML='<div class="chrome"><i></i><i></i><i></i><span>www.seusite.com.br</span></div>'+
@@ -272,7 +292,7 @@ function open_(k){
   document.getElementById('mt').textContent='Modelo '+(k+1)+': '+m.n;
   md.classList.add('on');document.body.style.overflow='hidden';document.getElementById('bx').focus();
 }
-function close_(){md.classList.remove('on');document.body.style.overflow='';if(last)last.focus()}
+function close_(){md.classList.remove('on');if(fr.classList.contains('live'))fr.innerHTML='';document.body.style.overflow='';if(last)last.focus()}
 document.getElementById('bx').onclick=close_;
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&md.classList.contains('on'))close_()});
 function vw(mob){fr.classList.toggle('mob',mob);document.getElementById('bm').setAttribute('aria-pressed',mob);document.getElementById('bd').setAttribute('aria-pressed',!mob)}
